@@ -5,6 +5,9 @@ def get_virtual_host(default):
     virtual_host_simple = None
     virtual_host_custom = None
 
+    if api.env.branch != 'master':
+        return prepend_namespace(default)
+
     try:
         if api.env.virtual_host_simple:
             virtual_host_simple = api.env.project_name
