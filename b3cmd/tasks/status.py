@@ -39,7 +39,13 @@ def all_status(color=True):
                 except BaseException:
                     server_type = 'server'
 
-                message = '--namespace %s --project %s --branch %s %s' % (namespace, project_name, branch, server_type)
+                message = '--project %(project_name)s --branch %(branch)s --namespace %(namespace)s %(server_type)s' % {
+                    'namespace': namespace,
+                    'project_name': project_name,
+                    'branch': branch,
+                    'server_type': server_type
+                }
+
                 if is_running:
                     if color:
                         print colors.green(message)
