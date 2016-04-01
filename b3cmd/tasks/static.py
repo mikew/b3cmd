@@ -8,9 +8,9 @@ from fabric.contrib.project import rsync_project
 @api.runs_once
 def setup_env():
     unique_host_name = '%(project_name)s--%(branch)s--static' % api.env
+    api.env.project_path = '%(b3cmd_root_template)s/%(namespace)s--%(project_name)s--%(branch)s' % (api.env)
     api.env.project_host_name = get_virtual_host(unique_host_name)
     api.env.virtual_host = api.env.virtual_host_template % api.env
-    api.env.project_path = '%s/%s' % (api.env.b3cmd_root_template, unique_host_name)
 
 
 def static_scaffold():
