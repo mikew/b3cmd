@@ -21,4 +21,4 @@ def parse_b3cmd_server_env():
         api.env.b3cmd_root_template = server_env.get('B3CMD_HOST_PWD')
         api.env.virtual_host_template = server_env.get('B3CMD_VIRTUAL_HOST_TEMPLATE')
         api.env.git_url_template = server_env.get('B3CMD_GIT_TEMPLATE')
-        api.env.default_namespace = server_env.get('B3CMD_DEFAULT_NAMESPACE')
+        api.env.namespace_from_server = server_env.get('B3CMD_DEFAULT_NAMESPACE')

@@ -13,28 +13,7 @@ default_branch = 'master'
 default_project_name = os.path.basename(os.getcwd())
 default_git_url = None
 default_revision = None
-
-git_head = './.git/HEAD'
-try:
-    with open(git_head) as f:
-        data = f.read().strip()
-        if 'refs/' in data:
-            default_branch = data.split('/')[-1:][0]
-
-    del data
-    del git_head
-except BaseException:
-    pass
-
-if os.getenv('GITLAB_CI') == 'true':
-    default_branch = os.getenv('CI_BUILD_REF_NAME')
-    default_git_url = os.getenv('CI_BUILD_REPO')
-    default_revision = os.getenv('CI_BUILD_REF')
-
-    finder = re.compile(r'([^/]+)\.git$')
-    default_project_name = finder.search(default_git_url).group(1)
-
-    del finder
+namespace_from_env = None
 
 
 def get_config_var(
@@ -105,6 +84,10 @@ No SSH host set. Please do one of:
         default=2224
     )
 
+    api.env.host_string = '%(ssh_host)s:%(ssh_port)s' % api.env
+    if api.env.get('ssh_user'):
+        api.env.host_string = '%(ssh_user)s@%(host_string)s' % api.env
+
     api.env.project_name = get_config_var(
         kwargs,
         kwarg_name='project',
@@ -162,7 +145,48 @@ No SSH host set. Please do one of:
         kwarg_name='virtual_host'
     )
 
-    api.env.host_string = '%(ssh_host)s:%(ssh_port)s' % api.env
 
-    if api.env.get('ssh_user'):
-        api.env.host_string = '%(ssh_user)s@%(host_string)s' % api.env
+def finalize():
+    global namespace_from_env
+    if not namespace_from_env and api.env.get('git_url'):
+        (namespace_from_env, _) = parse_git_url(api.env.get('git_url'))
+
+    if not api.env.get('namespace'):
+        api.env.namespace = namespace_from_env or api.env.get('namespace_from_server')
+
+    if not api.env.get('git_url'):
+        api.env.git_url = api.env.git_url_template % api.env
+
+
+def parse_git_url(url):
+    match = re.match(r'.*?[:/]([^/]+/)?([^/]+)(?:\.git)?$', url)
+
+    if not match:
+        raise Exception('Could not parse git url: %s' % url)
+
+    namespace = match.group(1)
+    project_name = match.group(2).replace('.git', '')
+
+    if namespace:
+        namespace = namespace.replace('/', '')
+
+    return (namespace, project_name)
+
+
+git_head = './.git/HEAD'
+try:
+    with open(git_head) as f:
+        data = f.read().strip()
+        if 'refs/' in data:
+            default_branch = data.split('/')[-1:][0]
+
+    del data
+    del git_head
+except BaseException:
+    pass
+
+if os.getenv('GITLAB_CI') == 'true':
+    default_branch = os.getenv('CI_BUILD_REF_NAME')
+    default_git_url = os.getenv('CI_BUILD_REPO')
+    default_revision = os.getenv('CI_BUILD_REF')
+    (namespace_from_env, default_project_name) = parse_git_url(default_git_url)

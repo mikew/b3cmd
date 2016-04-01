@@ -5,7 +5,7 @@ if not __package__:
         sys.path.insert(0, cwd)
 
 import click
-from b3cmd.settings import init
+from b3cmd import settings
 from b3cmd.parse_b3cmd_server_env import parse_b3cmd_server_env
 from b3cmd.version import __version_string__
 from b3cmd.fabric_execute import fabric_execute
@@ -35,8 +35,9 @@ CLICK_CONTEXT_SETTINGS = {
 @click.option('--virtual-host', help='USE AT OWN RISK. Set a custom virtual host name.')
 @click.option('--simple-virtual-host/--no-simple-virtual-host', help='USE AT OWN RISK. Set the virtual host name to just the project.')
 def main(*args, **kwargs):
-    init(*args, **kwargs)
+    settings.init(*args, **kwargs)
     parse_b3cmd_server_env()
+    settings.finalize()
 
 
 @main.command(name='server-scaffold', help='Pull and run a project via docker-compose.')
