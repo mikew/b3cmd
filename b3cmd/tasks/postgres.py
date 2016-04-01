@@ -10,7 +10,7 @@ def pgrestore(container_name, local_path, dbuser=None, dbpass=None, dbhost=None,
     api.env.dbport = dbport or '5432'
 
     with api.settings(api.hide('everything')):
-        api.env.workdir = api.run('mktemp -d -t b3cmd_util_pgrestore.XXXXXXXX')
+        api.env.workdir = api.run('mktemp -d -p %(b3cmd_root_template)s -t b3cmd_util_pgrestore.XXXXXXXX' % api.env)
         api.put(
             local_path=local_path,
             remote_path='%(workdir)s/database.dump' % api.env
@@ -67,7 +67,7 @@ def pgdump(container_name, dbuser=None, dbpass=None, dbhost=None, dbname=None, d
     api.env.dbport = dbport or '5432'
 
     with api.settings(api.hide('everything')):
-        api.env.workdir = api.run('mktemp -d -t b3cmd_util_pgdump.XXXXXXXX')
+        api.env.workdir = api.run('mktemp -d -p %(b3cmd_root_template)s -t b3cmd_util_pgdump.XXXXXXXX' % api.env)
 
         api.run('''
 cd "%(workdir)s"
