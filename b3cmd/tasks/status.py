@@ -31,14 +31,15 @@ def all_status(color=True):
                 p = p.replace('./', '', 1)
                 is_running = format_docker_compose_name(p) in all_running
                 parts = p.split('--')
-                project_name = parts[0]
-                branch = parts[1]
+                namespace = parts[0]
+                project_name = parts[1]
+                branch = parts[2]
                 try:
-                    server_type = parts[2]
+                    server_type = parts[3]
                 except BaseException:
                     server_type = 'server'
 
-                message = '--project %s --branch %s %s' % (project_name, branch, server_type)
+                message = '--namespace %s --project %s --branch %s %s' % (namespace, project_name, branch, server_type)
                 if is_running:
                     if color:
                         print colors.green(message)
