@@ -29,6 +29,7 @@ CLICK_CONTEXT_SETTINGS = {
 @click.option('--ssh-user', help='Default: b3cmd. [$B3CMD_SSH_USER]')
 @click.option('--project', help='Default: $(basename $PWD). [$B3CMD_PROJECT]')
 @click.option('--branch', help='The git branch to use. [$B3CMD_BRANCH]')
+@click.option('--namespace', help='The namespace to use. [$B3CMD_NAMESPACE]')
 @click.option('--git-url', help='Explicitly set the URL for git to clone.')
 @click.option('--verbose/--no-verbose', '-v', help='Be verbose.')
 @click.option('--virtual-host', help='USE AT OWN RISK. Set a custom virtual host name.')

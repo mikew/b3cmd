@@ -9,12 +9,7 @@ from fabric.contrib.project import rsync_project
 def setup_env():
     unique_host_name = '%(project_name)s--%(branch)s--static' % api.env
     api.env.project_host_name = get_virtual_host(unique_host_name)
-
-    try:
-        api.env.virtual_host = api.env.virtual_host_template % api.env.project_host_name
-    except BaseException:
-        api.env.virtual_host = '%s.%s' % (api.env.virtual_host_template, api.env.project_host_name)
-
+    api.env.virtual_host = api.env.virtual_host_template % api.env
     api.env.project_path = '%s/%s' % (api.env.b3cmd_root_template, unique_host_name)
 
 

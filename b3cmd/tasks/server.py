@@ -16,12 +16,7 @@ def find_docker_compose_file():
 def setup_env():
     unique_host_name = '%(project_name)s--%(branch)s' % api.env
     api.env.project_host_name = get_virtual_host(unique_host_name)
-
-    try:
-        api.env.virtual_host = api.env.virtual_host_template % api.env.project_host_name
-    except BaseException:
-        api.env.virtual_host = '%s.%s' % (api.env.virtual_host_template, api.env.project_host_name)
-
+    api.env.virtual_host = api.env.virtual_host_template % api.env
     api.env.project_path = '%s/%s' % (api.env.b3cmd_root_template, unique_host_name)
 
     find_docker_compose_file()
@@ -29,6 +24,9 @@ def setup_env():
 
 def server_scaffold(revision=None):
     setup_env()
+    if not api.env.get('namespace'):
+        api.env.namespace = api.env.get('default_namespace')
+
     if not api.env.get('git_url'):
         api.env.git_url = api.env.git_url_template % api.env.project_name
 

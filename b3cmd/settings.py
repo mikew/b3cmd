@@ -119,6 +119,12 @@ No SSH host set. Please do one of:
         default=default_branch
     )
 
+    api.env.namespace = get_config_var(
+        kwargs,
+        kwarg_name='namespace',
+        env_name='B3CMD_NAMESPACE'
+    )
+
     api.env.git_url = get_config_var(
         kwargs,
         kwarg_name='git_url',
