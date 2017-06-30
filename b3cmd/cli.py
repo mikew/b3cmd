@@ -66,8 +66,12 @@ def server_put(*args, **kwargs):
 
 
 @main.command(name='server-logs', help='Tail server logs.')
-def server_logs():
-    fabric_execute(server.server_logs)
+@click.option('--timestamps/--no-timestamps', '-t', help='Show timestamps')
+@click.option('--follow/--no-follow', '-f', default=True, help='Follow')
+@click.option('--tail', default='200', help='Number of lines to show from the end of the logs for each container')
+@click.argument('container_name', nargs=1, required=False)
+def server_logs(*args, **kwargs):
+    fabric_execute(server.server_logs, *args, **kwargs)
 
 
 @main.command(name='server-scale', help='See `docker-compose scale --help`.')

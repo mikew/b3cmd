@@ -1,4 +1,5 @@
 from fabric import api
+from fabric import state
 from fabric.contrib import files
 from b3cmd.get_virtual_host import get_virtual_host
 from b3cmd.sanitize_remote_path import sanitize_remote_path
@@ -74,11 +75,25 @@ def server_run(container_name, command):
             api.run('docker-compose -f "%(docker_compose_file)s" run --rm "%(container_name)s" %(command)s' % api.env)
 
 
-def server_logs():
+def server_logs(follow=True, timestamps=False, tail='all', container_name=''):
     setup_env()
+    state.output.stdout = True
+
+    api.env.tail = tail
+    api.env.container_name = ''
+    if container_name:
+        api.env.container_name = container_name
+
+    api.env.timestamp_flag = ''
+    if timestamps:
+        api.env.timestamp_flag = '--timestamps'
+
+    api.env.follow_flag = ''
+    if follow:
+        api.env.follow_flag = '--follow'
 
     with api.cd(api.env.project_path):
-        api.run('docker-compose -f "%(docker_compose_file)s" logs' % api.env)
+        api.run('docker-compose -f "%(docker_compose_file)s" logs %(timestamp_flag)s --tail=%(tail)s %(follow_flag)s %(container_name)s' % api.env)
 
 
 def server_put(local_path, remote_path):
