@@ -36,6 +36,7 @@ def server_scaffold(revision=None):
             # api.run('git clone "%(git_url)s" .' % api.env)
 
     with api.cd(api.env.project_path):
+        api.run('git remote set-url origin %(git_url)s' % api.env)
         api.run('git checkout -- "%(docker_compose_file)s"' % api.env, warn_only=True)
         api.run('git fetch origin')
         api.run('git checkout "%s"' % revision)
