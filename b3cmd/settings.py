@@ -142,7 +142,7 @@ No SSH host set. Please do one of:
 
     api.env.virtual_host_simple = get_config_var(
         kwargs,
-        kwarg_name='virtual_host'
+        kwarg_name='simple_virtual_host'
     )
 
 
