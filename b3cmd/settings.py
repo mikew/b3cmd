@@ -173,8 +173,8 @@ def parse_git_url(url):
     return (namespace, project_name)
 
 
-git_head = './.git/HEAD'
 try:
+    git_head = './.git/HEAD'
     with open(git_head) as f:
         data = f.read().strip()
         if 'refs/' in data:
@@ -187,6 +187,6 @@ except BaseException:
 
 if os.getenv('GITLAB_CI') == 'true':
     default_branch = os.getenv('CI_BUILD_REF_NAME')
-    default_git_url = os.getenv('CI_BUILD_REPO')
+    default_git_url = os.getenv('CI_REPOSITORY_URL') or os.getenv('CI_BUILD_REPO')
     default_revision = os.getenv('CI_BUILD_REF')
     (namespace_from_env, default_project_name) = parse_git_url(default_git_url)
