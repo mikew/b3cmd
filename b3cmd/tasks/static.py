@@ -45,13 +45,13 @@ def static_stop():
             api.run('docker-compose stop' % api.env)
 
 
-def static_put(local_path, remote_path):
+def static_put(local_path, remote_path, exclude=None):
     setup_env()
 
     static_scaffold()
     remote_path = sanitize_remote_path(remote_path)
     rsync_project(
-        exclude=api.env.put_excludes,
+        exclude=api.env.put_excludes + (exclude or ()),
         local_dir=local_path,
         remote_dir='%s/%s' % (api.env.project_path, remote_path),
         extra_opts='--chmod=a=r,u+w,D+x'

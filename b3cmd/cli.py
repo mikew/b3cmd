@@ -99,6 +99,7 @@ def static_stop():
 
 
 @main.command(name='static-put', help='Copy files to static root via rsync.')
+@click.option('--exclude', multiple=True, help='Exclude files matching pattern.')
 @click.argument('local_path')
 @click.argument('remote_path')
 def static_put(*args, **kwargs):
