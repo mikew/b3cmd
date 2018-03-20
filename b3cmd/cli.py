@@ -59,6 +59,7 @@ def server_run(*args, **kwargs):
 
 
 @main.command(name='server-put', help='Copy files to server root via rsync.')
+@click.option('--exclude', multiple=True, help='Exclude files matching pattern.')
 @click.argument('local_path')
 @click.argument('remote_path')
 def server_put(*args, **kwargs):

@@ -97,13 +97,13 @@ def server_logs(follow=True, timestamps=False, tail='all', container_name=''):
         api.run('docker-compose -f "%(docker_compose_file)s" logs %(timestamp_flag)s --tail=%(tail)s %(follow_flag)s %(container_name)s' % api.env)
 
 
-def server_put(local_path, remote_path):
+def server_put(local_path, remote_path, exclude=None):
     setup_env()
 
     remote_path = sanitize_remote_path(remote_path)
     api.run('mkdir -p %(project_path)s' % api.env)
     rsync_project(
-        exclude=api.env.put_excludes,
+        exclude=api.env.put_excludes + (exclude or ()),
         local_dir=local_path,
         remote_dir='%s/%s' % (api.env.project_path, remote_path)
     )
