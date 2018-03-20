@@ -13,6 +13,13 @@ def find_docker_compose_file():
             api.env.docker_compose_file = api.env.docker_compose_alt_name
 
 
+def copy_env_example():
+    with api.cd(api.env.project_path):
+        if not files.exists('env'):
+            if files.exists('env-example'):
+                api.run('ln -s env-example env')
+
+
 @api.runs_once
 def setup_env():
     unique_host_name = '%(project_name)s--%(branch)s' % api.env
@@ -41,6 +48,7 @@ def server_scaffold(revision=None):
         api.run('git fetch origin')
         api.run('git checkout "%s"' % revision)
 
+        copy_env_example()
         find_docker_compose_file()
         api.run('''
 sed -i -E \
