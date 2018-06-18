@@ -52,6 +52,7 @@ def server_stop():
 
 
 @main.command(name='server-run', help='Run a command in a container.')
+@click.option('--args', 'docker_run_args', help='Args to pass to docker-compose run')
 @click.argument('container_name')
 @click.argument('command', nargs=-1)
 def server_run(*args, **kwargs):

@@ -74,14 +74,15 @@ def server_stop():
             api.run('docker-compose -f "%(docker_compose_file)s" stop' % api.env)
 
 
-def server_run(container_name, command):
+def server_run(container_name, command, docker_run_args):
     setup_env()
     api.env.container_name = container_name
     api.env.command = ' '.join(command)
+    api.env.docker_run_args = docker_run_args or ''
 
     with api.settings(api.show('output')):
         with api.cd(api.env.project_path):
-            api.run('docker-compose -f "%(docker_compose_file)s" run --rm "%(container_name)s" %(command)s' % api.env)
+            api.run('docker-compose -f "%(docker_compose_file)s" run --rm %(docker_run_args)s "%(container_name)s" %(command)s' % api.env)
 
 
 def server_logs(follow=True, timestamps=False, tail='all', container_name=''):
