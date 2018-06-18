@@ -48,7 +48,7 @@ setup(
     test_suite='nose.collector',
     tests_require=('nose',),
     install_requires=(
-        'Fabric>=1.10.2',
+        'Fabric>=1.10.2, <2.0',
         'click>=5.1',
     ),
     entry_points={
