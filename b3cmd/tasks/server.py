@@ -58,12 +58,14 @@ sed -i -E \
     -e "s/__VIRTUAL_HOST__/%(virtual_host)s/g" \
     "%(docker_compose_file)s"
 ''' % api.env)
+        run_hook('before-start')
         # api.run('sed -i -E "s/__HOST__/%(project_host_name)s/" "%(docker_compose_file)s"' % api.env)
         # api.run('sed -i -E "s/__BRANCH__/%(branch)s/" "%(docker_compose_file)s"' % api.env)
         api.run('docker-compose -f "%(docker_compose_file)s" pull' % api.env)
         api.run('docker-compose -f "%(docker_compose_file)s" build --pull' % api.env)
         server_stop()
         api.run('docker-compose -f "%(docker_compose_file)s" up -d' % api.env)
+        run_hook('after-start')
 
 
 def server_stop():
@@ -71,7 +73,9 @@ def server_stop():
 
     with api.warn_only():
         with api.cd(api.env.project_path):
+            run_hook('before-stop')
             api.run('docker-compose -f "%(docker_compose_file)s" stop' % api.env)
+            run_hook('after-stop')
 
 
 def server_run(container_name, command, docker_run_args):
@@ -104,6 +108,13 @@ def server_logs(follow=True, timestamps=False, tail='all', container_name=''):
 
     with api.cd(api.env.project_path):
         api.run('docker-compose -f "%(docker_compose_file)s" logs %(timestamp_flag)s --tail=%(tail)s %(follow_flag)s %(container_name)s' % api.env)
+
+
+def run_hook(hook_name):
+    hook_file = '.b3cmd/%(hook_name)s' % { 'hook_name': hook_name }
+    with api.cd(api.env.project_path):
+        if files.exists(hook_file):
+            api.run(hook_file)
 
 
 def server_put(local_path, remote_path, exclude=None):
