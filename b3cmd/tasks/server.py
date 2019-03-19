@@ -9,15 +9,17 @@ from fabric.contrib.project import rsync_project
 def find_docker_compose_file():
     api.env.docker_compose_file = 'docker-compose.yml'
     with api.cd(api.env.project_path):
-        if files.exists(api.env.docker_compose_alt_name):
-            api.env.docker_compose_file = api.env.docker_compose_alt_name
+        with api.cd(api.env.sub_path):
+            if files.exists(api.env.docker_compose_alt_name):
+                api.env.docker_compose_file = api.env.docker_compose_alt_name
 
 
 def copy_env_example():
     with api.cd(api.env.project_path):
-        if not files.exists('env'):
-            if files.exists('env-example'):
-                api.run('ln -s env-example env')
+        with api.cd(api.env.sub_path):
+            if not files.exists('env'):
+                if files.exists('env-example'):
+                    api.run('ln -s env-example env')
 
 
 @api.runs_once
@@ -48,9 +50,10 @@ def server_scaffold(revision=None):
         api.run('git fetch origin')
         api.run('git checkout "%s"' % revision)
 
-        copy_env_example()
-        find_docker_compose_file()
-        api.run('''
+        with api.cd(api.env.sub_path):
+            copy_env_example()
+            find_docker_compose_file()
+            api.run('''
 sed -i -E \
     -e "s/__HOST__/%(project_host_name)s/g" \
     -e "s/__PROJECT__/%(project_name)s/g" \
@@ -58,14 +61,14 @@ sed -i -E \
     -e "s/__VIRTUAL_HOST__/%(virtual_host)s/g" \
     "%(docker_compose_file)s"
 ''' % api.env)
-        run_hook('before-start')
-        # api.run('sed -i -E "s/__HOST__/%(project_host_name)s/" "%(docker_compose_file)s"' % api.env)
-        # api.run('sed -i -E "s/__BRANCH__/%(branch)s/" "%(docker_compose_file)s"' % api.env)
-        api.run('docker-compose -f "%(docker_compose_file)s" pull' % api.env)
-        api.run('docker-compose -f "%(docker_compose_file)s" build --pull' % api.env)
-        server_stop()
-        api.run('docker-compose -f "%(docker_compose_file)s" up -d' % api.env)
-        run_hook('after-start')
+            run_hook('before-start')
+            # api.run('sed -i -E "s/__HOST__/%(project_host_name)s/" "%(docker_compose_file)s"' % api.env)
+            # api.run('sed -i -E "s/__BRANCH__/%(branch)s/" "%(docker_compose_file)s"' % api.env)
+            api.run('docker-compose -f "%(docker_compose_file)s" pull' % api.env)
+            api.run('docker-compose -f "%(docker_compose_file)s" build --pull' % api.env)
+            server_stop()
+            api.run('docker-compose -f "%(docker_compose_file)s" up -d' % api.env)
+            run_hook('after-start')
 
 
 def server_stop():
@@ -73,9 +76,10 @@ def server_stop():
 
     with api.warn_only():
         with api.cd(api.env.project_path):
-            run_hook('before-stop')
-            api.run('docker-compose -f "%(docker_compose_file)s" stop' % api.env)
-            run_hook('after-stop')
+            with api.cd(api.env.sub_path):
+                run_hook('before-stop')
+                api.run('docker-compose -f "%(docker_compose_file)s" stop' % api.env)
+                run_hook('after-stop')
 
 
 def server_run(container_name, command, docker_run_args):
@@ -86,7 +90,8 @@ def server_run(container_name, command, docker_run_args):
 
     with api.settings(api.show('output')):
         with api.cd(api.env.project_path):
-            api.run('docker-compose -f "%(docker_compose_file)s" run --rm %(docker_run_args)s "%(container_name)s" %(command)s' % api.env)
+            with api.cd(api.env.sub_path):
+                api.run('docker-compose -f "%(docker_compose_file)s" run --rm %(docker_run_args)s "%(container_name)s" %(command)s' % api.env)
 
 
 def server_logs(follow=True, timestamps=False, tail='all', container_name=''):
@@ -107,25 +112,27 @@ def server_logs(follow=True, timestamps=False, tail='all', container_name=''):
         api.env.follow_flag = '--follow'
 
     with api.cd(api.env.project_path):
-        api.run('docker-compose -f "%(docker_compose_file)s" logs %(timestamp_flag)s --tail=%(tail)s %(follow_flag)s %(container_name)s' % api.env)
+        with api.cd(api.env.sub_path):
+            api.run('docker-compose -f "%(docker_compose_file)s" logs %(timestamp_flag)s --tail=%(tail)s %(follow_flag)s %(container_name)s' % api.env)
 
 
 def run_hook(hook_name):
     hook_file = '.b3cmd/%(hook_name)s' % { 'hook_name': hook_name }
     with api.cd(api.env.project_path):
-        if files.exists(hook_file):
-            api.run(hook_file)
+        with api.cd(api.env.sub_path):
+            if files.exists(hook_file):
+                api.run(hook_file)
 
 
 def server_put(local_path, remote_path, exclude=None):
     setup_env()
 
     remote_path = sanitize_remote_path(remote_path)
-    api.run('mkdir -p %(project_path)s' % api.env)
+    api.run('mkdir -p %(project_path)s/%(sub_path)s' % api.env)
     rsync_project(
         exclude=api.env.put_excludes + (exclude or ()),
         local_dir=local_path,
-        remote_dir='%s/%s' % (api.env.project_path, remote_path)
+        remote_dir='%s/%s/%s' % (api.env.project_path, api.env.sub_path, remote_path)
     )
 
 
@@ -134,18 +141,21 @@ def server_rm():
     server_stop()
     with api.warn_only():
         with api.cd(api.env.project_path):
-            api.run('docker-compose -f "%(docker_compose_file)s" rm -f -v' % api.env)
+            with api.cd(api.env.sub_path):
+                api.run('docker-compose -f "%(docker_compose_file)s" rm -f -v' % api.env)
 
 
 def server_scale(services):
     setup_env()
     api.env.services = ' '.join(services)
     with api.cd(api.env.project_path):
-        api.run('docker-compose -f "%(docker_compose_file)s" scale %(services)s' % api.env)
+        with api.cd(api.env.sub_path):
+            api.run('docker-compose -f "%(docker_compose_file)s" scale %(services)s' % api.env)
 
 
 def server_ps():
     setup_env()
     with api.settings(api.hide('everything'), api.show('stdout')):
         with api.cd(api.env.project_path):
-            api.run('docker-compose -f "%(docker_compose_file)s" ps' % api.env)
+            with api.cd(api.env.sub_path):
+                api.run('docker-compose -f "%(docker_compose_file)s" ps' % api.env)

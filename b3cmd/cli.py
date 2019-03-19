@@ -34,6 +34,7 @@ CLICK_CONTEXT_SETTINGS = {
 @click.option('--verbose/--no-verbose', '-v', help='Be verbose.')
 @click.option('--virtual-host', help='USE AT OWN RISK. Set a custom virtual host name.')
 @click.option('--simple-virtual-host/--no-simple-virtual-host', help='USE AT OWN RISK. Set the virtual host name to just the project.')
+@click.option('--path', help='Use this path when running server tasks.')
 def main(*args, **kwargs):
     settings.init(*args, **kwargs)
     parse_b3cmd_server_env()

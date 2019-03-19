@@ -14,6 +14,7 @@ default_project_name = os.path.basename(os.getcwd())
 default_git_url = None
 default_revision = None
 namespace_from_env = None
+default_sub_path = './'
 
 
 def get_config_var(
@@ -143,6 +144,13 @@ No SSH host set. Please do one of:
     api.env.virtual_host_simple = get_config_var(
         kwargs,
         kwarg_name='simple_virtual_host'
+    )
+
+    api.env.sub_path = get_config_var(
+        kwargs,
+        kwarg_name='path',
+        env_name='B3CMD_SUB_PATH',
+        default=default_sub_path
     )
 
 
